@@ -36,7 +36,7 @@ See the example app for detailed implementation information.
 | Features               | Android            | iOS                | macOS                | Web |
 |------------------------|--------------------|--------------------|----------------------|-----|
 | analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :x:                  | :x: |
-| returnImage            | :heavy_check_mark: | :heavy_check_mark: | :x:                  | :x: |
+| returnImage            | :x:                | :heavy_check_mark: | :x:                  | :x: |
 | scanWindow             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
 
 ## Platform Support
