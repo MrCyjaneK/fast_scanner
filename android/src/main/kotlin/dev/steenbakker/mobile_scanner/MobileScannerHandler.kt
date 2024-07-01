@@ -7,9 +7,6 @@ import android.os.Looper
 import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import dev.steenbakker.mobile_scanner.objects.BarcodeFormats
-import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -124,7 +121,6 @@ class MobileScannerHandler(
             "start" -> start(call, result)
             "stop" -> stop(result)
             "toggleTorch" -> toggleTorch(result)
-            "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
             "updateScanWindow" -> updateScanWindow(call, result)
@@ -136,9 +132,7 @@ class MobileScannerHandler(
     private fun start(call: MethodCall, result: MethodChannel.Result) {
         val torch: Boolean = call.argument<Boolean>("torch") ?: false
         val facing: Int = call.argument<Int>("facing") ?: 0
-        val formats: List<Int>? = call.argument<List<Int>>("formats")
         val returnImage: Boolean = call.argument<Boolean>("returnImage") ?: false
-        val speed: Int = call.argument<Int>("speed") ?: 1
         val timeout: Int = call.argument<Int>("timeout") ?: 250
         val cameraResolutionValues: List<Int>? = call.argument<List<Int>>("cameraResolution")
         val useNewCameraSelector: Boolean = call.argument<Boolean>("useNewCameraSelector") ?: false
@@ -148,35 +142,13 @@ class MobileScannerHandler(
             null
         }
 
-        var barcodeScannerOptions: BarcodeScannerOptions? = null
-        if (formats != null) {
-            val formatsList: MutableList<Int> = mutableListOf()
-            for (formatValue in formats) {
-                formatsList.add(BarcodeFormats.fromRawValue(formatValue).intValue)
-            }
-            barcodeScannerOptions = if (formatsList.size == 1) {
-                BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
-                    .build()
-            } else {
-                BarcodeScannerOptions.Builder().setBarcodeFormats(
-                    formatsList.first(),
-                    *formatsList.subList(1, formatsList.size).toIntArray()
-                ).build()
-            }
-        }
-
         val position =
             if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
 
-        val detectionSpeed: DetectionSpeed = if (speed == 0) DetectionSpeed.NO_DUPLICATES
-        else if (speed ==1) DetectionSpeed.NORMAL else DetectionSpeed.UNRESTRICTED
-
         mobileScanner!!.start(
-            barcodeScannerOptions,
             returnImage,
             position,
             torch,
-            detectionSpeed,
             torchStateCallback,
             zoomScaleStateCallback,
             mobileScannerStartedCallback = {
@@ -236,13 +208,6 @@ class MobileScannerHandler(
         } catch (e: AlreadyStopped) {
             result.success(null)
         }
-    }
-
-    private fun analyzeImage(call: MethodCall, result: MethodChannel.Result) {
-        analyzerResult = result
-        val uri = Uri.fromFile(File(call.arguments.toString()))
-
-        mobileScanner!!.analyzeImage(uri, analyzeImageSuccessCallback, analyzeImageErrorCallback)
     }
 
     private fun toggleTorch(result: MethodChannel.Result) {
