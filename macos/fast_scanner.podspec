@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
 An universal scanner for Flutter based on MLKit.
                        DESC
-  s.homepage         = 'https://github.com/juliansteenbakker/fast_scanner'
+  s.homepage         = 'https://github.com/mrcyjanek/fast_scanner'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Julian Steenbakker' => 'juliansteenbakker@outlook.com' }
   s.source           = { :path => '.' }
