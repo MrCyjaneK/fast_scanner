@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  const MethodChannel channel = MethodChannel('mobile_scanner');
+  const MethodChannel channel = MethodChannel('fast_scanner');
 
   TestWidgetsFlutterBinding.ensureInitialized();
 

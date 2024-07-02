@@ -1,5 +1,5 @@
+import 'package:fast_scanner/src/enums/phone_type.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile_scanner/src/enums/phone_type.dart';
 
 void main() {
   group('$PhoneType tests', () {

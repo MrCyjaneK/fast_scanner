@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner.objects
+package dev.steenbakker.fast_scanner.objects
 
 class MobileScannerStartParameters(
     val width: Double = 0.0,

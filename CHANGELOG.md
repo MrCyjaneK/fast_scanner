@@ -18,7 +18,7 @@ has been refactored to be compatible with 1.7.
 
 ## 5.0.2
 Bugs fixed:
-* Fixed a crash when the controller is disposed while it is still starting. [#1036](https://github.com/juliansteenbakker/mobile_scanner/pull/1036) (thanks @EArminjon !)
+* Fixed a crash when the controller is disposed while it is still starting. [#1036](https://github.com/juliansteenbakker/fast_scanner/pull/1036) (thanks @EArminjon !)
 * Fixed an issue that causes the initial torch state to be out of sync.
 
 Improvements:
@@ -145,7 +145,7 @@ Bugs fixed:
 
 ## 3.5.0
 
-**NOTE: From this version onwards, `mobile_scanner` requires Android projects to have a `compileSdk` of 34 (Android 14) or higher**
+**NOTE: From this version onwards, `fast_scanner` requires Android projects to have a `compileSdk` of 34 (Android 14) or higher**
 
 New Features:
 * Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)
@@ -405,26 +405,26 @@ Another feature that has been added is a format selector!
 Just keep in mind that iOS for now only supports 1 selected barcode.
 
 ## 0.1.3
-* Fixed crash after asking permission. [#29](https://github.com/juliansteenbakker/mobile_scanner/issues/29)
+* Fixed crash after asking permission. [#29](https://github.com/juliansteenbakker/fast_scanner/issues/29)
 * Upgraded cameraX from 1.1.0-beta01 to 1.1.0-beta02
 
 ## 0.1.2
-* MobileScannerArguments is now exported. [#7](https://github.com/juliansteenbakker/mobile_scanner/issues/7)
+* MobileScannerArguments is now exported. [#7](https://github.com/juliansteenbakker/fast_scanner/issues/7)
 
 Bugfixes:
-* Fixed application crashing when stop() or start() is called multiple times. [#5](https://github.com/juliansteenbakker/mobile_scanner/issues/5)
-* Fixes controller not being disposed correctly. [#23](https://github.com/juliansteenbakker/mobile_scanner/issues/23)
-* Catch error when no camera is found. [#19](https://github.com/juliansteenbakker/mobile_scanner/issues/19)
+* Fixed application crashing when stop() or start() is called multiple times. [#5](https://github.com/juliansteenbakker/fast_scanner/issues/5)
+* Fixes controller not being disposed correctly. [#23](https://github.com/juliansteenbakker/fast_scanner/issues/23)
+* Catch error when no camera is found. [#19](https://github.com/juliansteenbakker/fast_scanner/issues/19)
 
 ## 0.1.1
-mobile_scanner is now compatible with sdk >= 2.12 and flutter >= 2.2.0
+fast_scanner is now compatible with sdk >= 2.12 and flutter >= 2.2.0
 
 ## 0.1.0
 We now have MacOS support using Apple's Vision framework!
 Keep in mind that for now, only the raw value of the barcode object is supported.
 
 Bugfixes:
-* Fixed a crash when dispose is called in a overridden method. [#5](https://github.com/juliansteenbakker/mobile_scanner/issues/5) 
+* Fixed a crash when dispose is called in a overridden method. [#5](https://github.com/juliansteenbakker/fast_scanner/issues/5) 
 
 ## 0.0.3
 * Added some API docs and README

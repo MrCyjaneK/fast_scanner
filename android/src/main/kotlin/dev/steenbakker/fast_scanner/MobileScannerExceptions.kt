@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner
+package dev.steenbakker.fast_scanner
 
 class NoCamera : Exception()
 class AlreadyStarted : Exception()

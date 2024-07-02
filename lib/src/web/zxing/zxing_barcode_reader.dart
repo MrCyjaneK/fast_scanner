@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:ui';
 
-import 'package:mobile_scanner/src/enums/barcode_format.dart';
-import 'package:mobile_scanner/src/objects/barcode_capture.dart';
-import 'package:mobile_scanner/src/objects/start_options.dart';
-import 'package:mobile_scanner/src/web/barcode_reader.dart';
-import 'package:mobile_scanner/src/web/javascript_map.dart';
-import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
-import 'package:mobile_scanner/src/web/zxing/result.dart';
-import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
+import 'package:fast_scanner/src/enums/barcode_format.dart';
+import 'package:fast_scanner/src/objects/barcode_capture.dart';
+import 'package:fast_scanner/src/objects/start_options.dart';
+import 'package:fast_scanner/src/web/barcode_reader.dart';
+import 'package:fast_scanner/src/web/javascript_map.dart';
+import 'package:fast_scanner/src/web/media_track_constraints_delegate.dart';
+import 'package:fast_scanner/src/web/zxing/result.dart';
+import 'package:fast_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:web/web.dart' as web;
 
 /// A barcode reader implementation that uses the ZXing library.

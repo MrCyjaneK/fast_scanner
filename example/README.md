@@ -1,11 +1,11 @@
-# mobile_scanner_example
+# fast_scanner_example
 
-Demonstrates how to use the mobile_scanner plugin.
+Demonstrates how to use the fast_scanner plugin.
 
 ## Run Examples
 
-1. `git clone https://github.com/juliansteenbakker/mobile_scanner.git`
-2. `cd mobile_scanner/example/lib`
+1. `git clone https://github.com/juliansteenbakker/fast_scanner.git`
+2. `cd fast_scanner/example/lib`
 3. `flutter pub get`
 4. `flutter run`
 

@@ -1,4 +1,4 @@
-import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+import 'package:fast_scanner/src/fast_scanner_controller.dart';
 
 /// This enum defines the different error codes for the mobile scanner.
 enum MobileScannerErrorCode {

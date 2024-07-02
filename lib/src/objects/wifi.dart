@@ -1,5 +1,5 @@
-import 'package:mobile_scanner/src/enums/barcode_type.dart';
-import 'package:mobile_scanner/src/enums/encryption_type.dart';
+import 'package:fast_scanner/src/enums/barcode_type.dart';
+import 'package:fast_scanner/src/enums/encryption_type.dart';
 
 /// Wireless network information from [BarcodeType.wifi] barcodes.
 class WiFi {

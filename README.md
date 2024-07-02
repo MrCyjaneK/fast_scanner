@@ -1,8 +1,10 @@
-# mobile_scanner
+# fast_scanner
 
-[![pub package](https://img.shields.io/pub/v/mobile_scanner.svg)](https://pub.dev/packages/mobile_scanner)
+> NOTE: This is a fork, OG [@juliansteenbakker](https://github.com/juliansteenbakker/mobile_scanner)
+
+[![pub package](https://img.shields.io/pub/v/fast_scanner.svg)](https://pub.dev/packages/fast_scanner)
 [![style: lint](https://img.shields.io/badge/style-lint-4BC0F5.svg)](https://pub.dev/packages/lint)
-[![mobile_scanner](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml/badge.svg)](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml)
+[![fast_scanner](https://github.com/juliansteenbakker/fast_scanner/actions/workflows/flutter.yml/badge.svg)](https://github.com/juliansteenbakker/fast_scanner/actions/workflows/flutter.yml)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/juliansteenbakker?label=like%20my%20work?%20sponsor%20me!)](https://github.com/sponsors/juliansteenbakker)
 
 A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
@@ -56,7 +58,7 @@ The alternative is to use the **unbundled version** of MLKit Barcode-scanning fo
 
 To use the **unbundled version** of the MLKit Barcode-scanning, add the following line to your `/android/gradle.properties` file:
 ```
-dev.steenbakker.mobile_scanner.useUnbundled=true
+dev.steenbakker.fast_scanner.useUnbundled=true
 ```
 
 ### iOS
@@ -93,7 +95,7 @@ the source URL can be set beforehand.
 
 ```dart
 import 'package:flutter/foundation.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:fast_scanner/fast_scanner.dart';
 
 final String scriptUrl = // ...
 
@@ -104,7 +106,7 @@ if (kIsWeb) {
 
 ## Usage
 
-Import the package with `package:mobile_scanner/mobile_scanner.dart`.
+Import the package with `package:fast_scanner/fast_scanner.dart`.
 
 Create a new `MobileScannerController` controller, using the required options.
 Provide a `StreamSubscription` for the barcode events.

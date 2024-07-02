@@ -1,6 +1,6 @@
 //
 //  BarcodeHandler.swift
-//  mobile_scanner
+//  fast_scanner
 //
 //  Created by Julian Steenbakker on 24/08/2022.
 //
@@ -14,7 +14,7 @@ public class BarcodeHandler: NSObject, FlutterStreamHandler {
     
     init(registrar: FlutterPluginRegistrar) {
         eventChannel = FlutterEventChannel(name:
-                                            "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: registrar.messenger())
+                                            "dev.steenbakker.fast_scanner/scanner/event", binaryMessenger: registrar.messenger())
         super.init()
         eventChannel.setStreamHandler(self)
     }

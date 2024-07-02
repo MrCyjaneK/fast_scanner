@@ -1,11 +1,11 @@
 {
-    "name": "mobile_scanner_example",
-    "short_name": "mobile_scanner_example",
+    "name": "fast_scanner_example",
+    "short_name": "fast_scanner_example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "Demonstrates how to use the mobile_scanner plugin.",
+    "description": "Demonstrates how to use the fast_scanner plugin.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

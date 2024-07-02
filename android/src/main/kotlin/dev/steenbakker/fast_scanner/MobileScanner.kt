@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner
+package dev.steenbakker.fast_scanner
 
 import android.app.Activity
 import android.content.Context
@@ -20,7 +20,7 @@ import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
+import dev.steenbakker.fast_scanner.objects.MobileScannerStartParameters
 import io.flutter.Log
 import io.flutter.view.TextureRegistry
 import java.util.concurrent.Executors

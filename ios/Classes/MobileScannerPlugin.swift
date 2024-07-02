@@ -65,7 +65,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     }
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let channel = FlutterMethodChannel(name: "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger())
+        let channel = FlutterMethodChannel(name: "dev.steenbakker.fast_scanner/scanner/method", binaryMessenger: registrar.messenger())
         let instance = MobileScannerPlugin(barcodeHandler: BarcodeHandler(registrar: registrar), registry: registrar.textures())
         registrar.addMethodCallDelegate(instance, channel: channel)
     }

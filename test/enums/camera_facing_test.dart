@@ -1,5 +1,5 @@
+import 'package:fast_scanner/src/enums/camera_facing.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile_scanner/src/enums/camera_facing.dart';
 
 void main() {
   group('$CameraFacing tests', () {

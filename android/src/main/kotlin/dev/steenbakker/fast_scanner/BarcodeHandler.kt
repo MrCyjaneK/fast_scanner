@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner
+package dev.steenbakker.fast_scanner
 
 import android.os.Handler
 import android.os.Looper
@@ -11,7 +11,7 @@ class BarcodeHandler(binaryMessenger: BinaryMessenger) : EventChannel.StreamHand
 
     private val eventChannel = EventChannel(
         binaryMessenger,
-        "dev.steenbakker.mobile_scanner/scanner/event"
+        "dev.steenbakker.fast_scanner/scanner/event"
     )
 
     init {

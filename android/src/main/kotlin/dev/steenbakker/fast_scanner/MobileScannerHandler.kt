@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner
+package dev.steenbakker.fast_scanner
 
 import android.app.Activity
 import android.net.Uri
@@ -81,7 +81,7 @@ class MobileScannerHandler(
 
     init {
         methodChannel = MethodChannel(binaryMessenger,
-            "dev.steenbakker.mobile_scanner/scanner/method")
+            "dev.steenbakker.fast_scanner/scanner/method")
         methodChannel!!.setMethodCallHandler(this)
         mobileScanner = MobileScanner(activity, textureRegistry, callback, errorCallback)
     }

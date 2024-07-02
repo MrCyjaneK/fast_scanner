@@ -1,31 +1,31 @@
 import 'dart:async';
 
+import 'package:fast_scanner/src/enums/barcode_format.dart';
+import 'package:fast_scanner/src/enums/fast_scanner_authorization_state.dart';
+import 'package:fast_scanner/src/enums/fast_scanner_error_code.dart';
+import 'package:fast_scanner/src/enums/torch_state.dart';
+import 'package:fast_scanner/src/fast_scanner_exception.dart';
+import 'package:fast_scanner/src/fast_scanner_platform_interface.dart';
+import 'package:fast_scanner/src/fast_scanner_view_attributes.dart';
+import 'package:fast_scanner/src/objects/barcode.dart';
+import 'package:fast_scanner/src/objects/barcode_capture.dart';
+import 'package:fast_scanner/src/objects/start_options.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mobile_scanner/src/enums/barcode_format.dart';
-import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart';
-import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
-import 'package:mobile_scanner/src/enums/torch_state.dart';
-import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
-import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
-import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
-import 'package:mobile_scanner/src/objects/barcode.dart';
-import 'package:mobile_scanner/src/objects/barcode_capture.dart';
-import 'package:mobile_scanner/src/objects/start_options.dart';
 
 /// An implementation of [MobileScannerPlatform] that uses method channels.
 class MethodChannelMobileScanner extends MobileScannerPlatform {
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel(
-    'dev.steenbakker.mobile_scanner/scanner/method',
+    'dev.steenbakker.fast_scanner/scanner/method',
   );
 
   /// The event channel that sends back scanned barcode events.
   @visibleForTesting
   final eventChannel = const EventChannel(
-    'dev.steenbakker.mobile_scanner/scanner/event',
+    'dev.steenbakker.fast_scanner/scanner/event',
   );
 
   Stream<Map<Object?, Object?>>? _eventsStream;

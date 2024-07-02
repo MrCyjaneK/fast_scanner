@@ -1,12 +1,11 @@
 import 'dart:async';
 
+import 'package:fast_scanner/fast_scanner.dart';
+import 'package:fast_scanner_example/scanned_barcode_label.dart';
+import 'package:fast_scanner_example/scanner_button_widgets.dart';
+import 'package:fast_scanner_example/scanner_error_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner_example/scanned_barcode_label.dart';
-
-import 'package:mobile_scanner_example/scanner_button_widgets.dart';
-import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerWithZoom extends StatefulWidget {
   const BarcodeScannerWithZoom({super.key});

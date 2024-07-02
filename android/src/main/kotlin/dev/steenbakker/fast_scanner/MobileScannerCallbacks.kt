@@ -1,6 +1,6 @@
-package dev.steenbakker.mobile_scanner
+package dev.steenbakker.fast_scanner
 
-import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
+import dev.steenbakker.fast_scanner.objects.MobileScannerStartParameters
 
 typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int?) -> Unit
 typealias AnalyzerErrorCallback = (message: String) -> Unit

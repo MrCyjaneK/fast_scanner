@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner
+package dev.steenbakker.fast_scanner
 
 import android.media.Image
 import android.graphics.ImageFormat

@@ -1,8 +1,8 @@
 import 'dart:ui';
 
-import 'package:mobile_scanner/src/enums/camera_facing.dart';
-import 'package:mobile_scanner/src/enums/torch_state.dart';
-import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
+import 'package:fast_scanner/src/enums/camera_facing.dart';
+import 'package:fast_scanner/src/enums/torch_state.dart';
+import 'package:fast_scanner/src/fast_scanner_exception.dart';
 
 /// This class represents the current state of a [MobileScannerController].
 class MobileScannerState {

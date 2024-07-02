@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner
+package dev.steenbakker.fast_scanner
 
 import android.content.pm.PackageManager
 import io.flutter.plugin.common.PluginRegistry

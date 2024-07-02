@@ -1,5 +1,5 @@
+import 'package:fast_scanner/fast_scanner.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 
 class ScannerErrorWidget extends StatelessWidget {
   const ScannerErrorWidget({super.key, required this.error});

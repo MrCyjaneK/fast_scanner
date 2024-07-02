@@ -1,6 +1,6 @@
+import 'package:fast_scanner/src/scan_window_calculation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
 void main() {
   group(

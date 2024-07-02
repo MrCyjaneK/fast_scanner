@@ -1,4 +1,4 @@
-import 'package:mobile_scanner/src/enums/phone_type.dart';
+import 'package:fast_scanner/src/enums/phone_type.dart';
 
 /// Phone number information from a barcode.
 class Phone {

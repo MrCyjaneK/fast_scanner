@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner_example
+package dev.steenbakker.fast_scanner_example
 
 import io.flutter.embedding.android.FlutterActivity
 

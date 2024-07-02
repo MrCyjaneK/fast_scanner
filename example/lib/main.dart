@@ -1,12 +1,12 @@
+import 'package:fast_scanner_example/barcode_scanner_controller.dart';
+import 'package:fast_scanner_example/barcode_scanner_listview.dart';
+import 'package:fast_scanner_example/barcode_scanner_pageview.dart';
+import 'package:fast_scanner_example/barcode_scanner_returning_image.dart';
+import 'package:fast_scanner_example/barcode_scanner_simple.dart';
+import 'package:fast_scanner_example/barcode_scanner_window.dart';
+import 'package:fast_scanner_example/barcode_scanner_zoom.dart';
+import 'package:fast_scanner_example/fast_scanner_overlay.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner_example/barcode_scanner_controller.dart';
-import 'package:mobile_scanner_example/barcode_scanner_listview.dart';
-import 'package:mobile_scanner_example/barcode_scanner_pageview.dart';
-import 'package:mobile_scanner_example/barcode_scanner_returning_image.dart';
-import 'package:mobile_scanner_example/barcode_scanner_simple.dart';
-import 'package:mobile_scanner_example/barcode_scanner_window.dart';
-import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
-import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
 
 void main() {
   runApp(

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:mobile_scanner/src/objects/barcode.dart';
+import 'package:fast_scanner/src/objects/barcode.dart';
 
 /// This class represents a scanned barcode.
 class BarcodeCapture {

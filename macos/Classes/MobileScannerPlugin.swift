@@ -39,9 +39,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = MobileScannerPlugin(registrar.textures)
         let method = FlutterMethodChannel(name:
-                                            "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger)
+                                            "dev.steenbakker.fast_scanner/scanner/method", binaryMessenger: registrar.messenger)
         let event = FlutterEventChannel(name:
-                                            "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: registrar.messenger)
+                                            "dev.steenbakker.fast_scanner/scanner/event", binaryMessenger: registrar.messenger)
         registrar.addMethodCallDelegate(instance, channel: method)
         event.setStreamHandler(instance)
     }

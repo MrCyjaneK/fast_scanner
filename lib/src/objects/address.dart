@@ -1,4 +1,4 @@
-import 'package:mobile_scanner/src/enums/address_type.dart';
+import 'package:fast_scanner/src/enums/address_type.dart';
 
 /// An address.
 class Address {

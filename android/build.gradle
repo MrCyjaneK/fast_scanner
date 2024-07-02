@@ -1,4 +1,4 @@
-group 'dev.steenbakker.mobile_scanner'
+group 'dev.steenbakker.fast_scanner'
 version '1.0-SNAPSHOT'
 
 buildscript {
@@ -26,7 +26,7 @@ apply plugin: 'kotlin-android'
 
 android {
     if (project.android.hasProperty("namespace")) {
-        namespace 'dev.steenbakker.mobile_scanner'
+        namespace 'dev.steenbakker.fast_scanner'
     }
 
     compileSdk 34
