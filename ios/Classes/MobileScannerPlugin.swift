@@ -39,21 +39,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { barcodes, error, image in
             if barcodes != nil {
                 let barcodesMap: [Any?] = barcodes!.compactMap { barcode in
-                    if (MobileScannerPlugin.scanWindow != nil) {
-                        if (MobileScannerPlugin.isBarcodeInScanWindow(barcode: barcode, imageSize: image.size)) {
-                            return barcode.data
-                        } else {
-                            return nil
-                        }
-                    } else {
-                        return barcode.data
-                    }
+                    return barcode
                 }
                 if (!barcodesMap.isEmpty) {
                     barcodeHandler.publishEvent(["name": "barcode", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!), "width": image.size.width, "height": image.size.height])
                 }
             } else if (error != nil){
-                barcodeHandler.publishEvent(["name": "error", "data": error!.localizedDescription])
+                barcodeHandler.publishEvent(["name": "error", "data": error])
             }
         }, torchModeChangeCallback: { torchState in
             barcodeHandler.publishEvent(["name": "torchState", "data": torchState])

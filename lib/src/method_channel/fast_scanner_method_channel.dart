@@ -51,10 +51,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       return null;
     }
 
-    final List<Map<Object?, Object?>> barcodes =
-        data.cast<Map<Object?, Object?>>();
-
     if (defaultTargetPlatform == TargetPlatform.macOS) {
+      final List<Map<Object?, Object?>> barcodes =
+        data.cast<Map<Object?, Object?>>();
       return BarcodeCapture(
         raw: event,
         barcodes: barcodes
@@ -70,8 +69,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       );
     }
 
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      final List<Map<Object?, Object?>> barcodes =
+        data.cast<Map<Object?, Object?>>();
       final double? width = event['width'] as double?;
       final double? height = event['height'] as double?;
 
@@ -83,6 +83,16 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       );
     }
 
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final double? width = event['width'] as double?;
+      final double? height = event['height'] as double?;
+      return BarcodeCapture(
+        raw: data,
+        barcodes: data.map((e) => Barcode(rawValue: e.toString())).toList(),
+        image: event['image'] as Uint8List?,
+        size: width == null || height == null ? Size.zero : Size(width, height),
+      );
+    }
     throw const MobileScannerException(
       errorCode: MobileScannerErrorCode.genericError,
       errorDetails: MobileScannerErrorDetails(

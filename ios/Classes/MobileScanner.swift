@@ -10,8 +10,10 @@ import Flutter
 import AVFoundation
 import MLKitVision
 import MLKitBarcodeScanning
+import VideoToolbox
+import Vision
 
-typealias MobileScannerCallback = ((Array<Barcode>?, Error?, UIImage) -> ())
+typealias MobileScannerCallback = ((Array<String>?, String?, UIImage) -> ())
 typealias TorchModeChangeCallback = ((Int?) -> ())
 typealias ZoomScaleChangeCallback = ((Double?) -> ())
 
@@ -150,23 +152,56 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 position: videoPosition
             )
 
-            scanner.process(image) { [self] barcodes, error in
-                imagesCurrentlyBeingProcessed = false
-                
-                if (detectionSpeed == DetectionSpeed.noDuplicates) {
-                    let newScannedBarcodes = barcodes?.compactMap({ barcode in
-                        return barcode.rawValue
-                    }).sorted()
-                    
-                    if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
-                        return
-                    } else if (newScannedBarcodes?.isEmpty == false) {
-                        barcodesString = newScannedBarcodes
-                    }
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                if(self!.latestBuffer == nil){
+                    return
                 }
-
-                mobileScannerCallback(barcodes, error, ciImage)
+                var cgImage: CGImage?
+                VTCreateCGImageFromCVPixelBuffer(self!.latestBuffer, options: nil, imageOut: &cgImage)
+                let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!)
+                do {
+                    let barcodeRequest:VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
+                        self?.imagesCurrentlyBeingProcessed = false
+                        if error == nil {
+                            if let results = request.results as? [VNBarcodeObservation] {
+                                for barcode in results {
+                                    DispatchQueue.main.async {
+                                        self?.mobileScannerCallback([barcode.payloadStringValue ?? ""], error?.localizedDescription, ciImage)
+                                    }
+                                    //                                   if barcodeType == "QR" {
+                                    //                                        let image = CIImage(image: source)
+                                    //                                        image?.cropping(to: barcode.boundingBox)
+                                    //                                        self.qrCodeDescriptor(qrCode: barcode, qrCodeImage: image!)
+                                    //                                    }
+                                }
+                            }
+                        } else {
+                            self?.mobileScannerCallback([], error?.localizedDescription, ciImage)
+                        }
+                    })
+                    try imageRequestHandler.perform([barcodeRequest])
+                } catch let e {
+                    self?.mobileScannerCallback([], e.localizedDescription, ciImage)
+                }
             }
+
+            // scanner.process(image) { [self] barcodes, error in
+            //     imagesCurrentlyBeingProcessed = false
+                
+            //     if (detectionSpeed == DetectionSpeed.noDuplicates) {
+            //         let newScannedBarcodes = barcodes?.compactMap({ barcode in
+            //             return barcode.rawValue
+            //         }).sorted()
+                    
+            //         if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
+            //             return
+            //         } else if (newScannedBarcodes?.isEmpty == false) {
+            //             barcodesString = newScannedBarcodes
+            //         }
+            //     }
+
+            //     mobileScannerCallback(barcodes, error, ciImage)
+            // }
         }
     }
 

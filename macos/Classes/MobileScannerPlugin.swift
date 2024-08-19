@@ -106,7 +106,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to get image buffer from sample buffer.")
+            NSLog("Failed to get image buffer from sample buffer.")
             return
         }
         latestBuffer = imageBuffer
