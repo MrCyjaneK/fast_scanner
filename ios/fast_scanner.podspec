@@ -5,9 +5,9 @@
 Pod::Spec.new do |s|
   s.name             = 'fast_scanner'
   s.version          = '5.1.1'
-  s.summary          = 'An universal scanner for Flutter based on MLKit.'
+  s.summary          = 'An universal scanner for Flutter based on apple stuff.'
   s.description      = <<-DESC
-An universal scanner for Flutter based on MLKit.
+An universal scanner for Flutter based on apple stuff.
                        DESC
   s.homepage         = 'https://github.com/juliansteenbakker/fast_scanner'
   s.license          = { :file => '../LICENSE' }
@@ -15,9 +15,6 @@ An universal scanner for Flutter based on MLKit.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'MLKitBarcodeScanning', '~> 2.2.0'
-  s.dependency 'ZXingObjC', '~> 3.6.9'
-  s.dependency 'MLKitVision', '~> 4.2.0'
   s.platform = :ios, '12.0'
   s.static_framework = true
   # Flutter.framework does not contain a i386 slice.

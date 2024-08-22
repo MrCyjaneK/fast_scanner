@@ -1,6 +1,4 @@
 import Flutter
-import MLKitVision
-import MLKitBarcodeScanning
 import AVFoundation
 import UIKit
 
@@ -14,26 +12,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
 
     /// The points for the scan window.
     static var scanWindow: [CGFloat]?
-    
-    private static func isBarcodeInScanWindow(barcode: Barcode, imageSize: CGSize) -> Bool {
-        let scanwindow = MobileScannerPlugin.scanWindow!
-        let barcodeminX = barcode.cornerPoints![0].cgPointValue.x
-        let barcodeminY = barcode.cornerPoints![1].cgPointValue.y
-        
-        let barcodewidth = barcode.cornerPoints![2].cgPointValue.x - barcodeminX
-        let barcodeheight = barcode.cornerPoints![3].cgPointValue.y - barcodeminY
-        let barcodeBox = CGRect(x: barcodeminX, y: barcodeminY, width: barcodewidth, height: barcodeheight)
-
-        let minX = scanwindow[0] * imageSize.width
-        let minY = scanwindow[1] * imageSize.height
-
-        let width = (scanwindow[2] * imageSize.width)  - minX
-        let height = (scanwindow[3] * imageSize.height) - minY
-
-        let scaledWindow =  CGRect(x: minX, y: minY, width: width, height: height)
-        
-        return scaledWindow.contains(barcodeBox)
-    }
     
     init(barcodeHandler: BarcodeHandler, registry: FlutterTextureRegistry) {
         self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { barcodes, error, image in
@@ -74,8 +52,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             stop(result)
         case "toggleTorch":
             toggleTorch(result)
-        case "analyzeImage":
-            analyzeImage(call, result)
         case "setScale":
             setScale(call, result)
         case "resetScale":
@@ -97,22 +73,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
         self.mobileScanner.timeoutSeconds = Double(timeoutMs) / Double(1000)
 
-        let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
-        var barcodeOptions: BarcodeScannerOptions? = nil
-
-        if (formatList.count != 0) {
-            var barcodeFormats: BarcodeFormat = []
-            for index in formats {
-                barcodeFormats.insert(BarcodeFormat(rawValue: index))
-            }
-            barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
-        }
-
         let position = facing == 0 ? AVCaptureDevice.Position.front : .back
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
 
         do {
-            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed) { parameters in
+            try mobileScanner.start(returnImage: returnImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed) { parameters in
                 DispatchQueue.main.async {
                     result([
                         "textureId": parameters.textureId,
@@ -223,39 +188,4 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         return CGRect(x: minX, y: minY, width: width, height: height)
     }
     
-    /// Analyzes a single image.
-    private func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        let uiImage = UIImage(contentsOfFile: call.arguments as? String ?? "")
-        
-        if (uiImage == nil) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "No image found in analyzeImage!",
-                                details: nil))
-            return
-        }
-
-        mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back, callback: { barcodes, error in
-            if error != nil {
-                DispatchQueue.main.async {
-                    result(FlutterError(code: "MobileScanner",
-                                        message: error?.localizedDescription,
-                                        details: nil))
-                }
-                
-                return
-            }
-            
-            if (barcodes == nil || barcodes!.isEmpty) {
-                DispatchQueue.main.async {
-                    result(nil)
-                }
-            } else {
-                let barcodesMap: [Any?] = barcodes!.compactMap { barcode in barcode.data }
-                
-                DispatchQueue.main.async {
-                    result(["name": "barcode", "data": barcodesMap])
-                }
-            }
-        })
-    }
 }
