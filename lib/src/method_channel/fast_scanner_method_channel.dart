@@ -53,7 +53,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     if (defaultTargetPlatform == TargetPlatform.macOS) {
       final List<Map<Object?, Object?>> barcodes =
-        data.cast<Map<Object?, Object?>>();
+          data.cast<Map<Object?, Object?>>();
       return BarcodeCapture(
         raw: event,
         barcodes: barcodes
@@ -71,7 +71,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       final List<Map<Object?, Object?>> barcodes =
-        data.cast<Map<Object?, Object?>>();
+          data.cast<Map<Object?, Object?>>();
       final double? width = event['width'] as double?;
       final double? height = event['height'] as double?;
 
