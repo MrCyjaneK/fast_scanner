@@ -61,9 +61,6 @@ class QrCodeAnalyzerBoofcv(
         grayU8.data = yData
         grayU8.stride = planes?.get(0)?.rowStride ?: 0
 
-        // Close the ImageProxy to release resources
-        // imageProxy.close()
-
         return grayU8
     }
     private var debugI = 0
