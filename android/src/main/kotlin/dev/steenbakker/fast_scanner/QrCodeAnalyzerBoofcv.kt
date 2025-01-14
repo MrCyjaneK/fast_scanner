@@ -153,6 +153,5 @@ class QrCodeAnalyzerBoofcv(
             Log.d("QrCodeAnalyzerBoofcv.kt", det.message)
             onQrCodesDetected(Result(det.message, det.rawbits, null, BarcodeFormat.QR_CODE))
         }
-        imageProxy.close()
     }
 }

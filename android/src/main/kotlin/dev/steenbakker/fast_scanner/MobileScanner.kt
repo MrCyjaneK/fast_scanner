@@ -50,7 +50,7 @@ class MobileScanner(
     private var returnImage = false
     private val cameraExecutor = Executors.newSingleThreadExecutor()
 
-    private val qrAnalyzerBoofcv = QrCodeAnalyzerBoofcv { qrResult ->
+    private val universalQrCodeAnalyzer = UniversalQrCodeAnalyzer { qrResult ->
         Log.d("qrAnalyzerBoofcv:", "called")
         val barcodeMap: MutableList<Map<String, Any?>> = mutableListOf()
 
@@ -217,7 +217,7 @@ class MobileScanner(
                 }
             }
 
-            val analysis = analysisBuilder.build().apply { setAnalyzer(cameraExecutor, qrAnalyzerBoofcv) }
+            val analysis = analysisBuilder.build().apply { setAnalyzer(cameraExecutor, universalQrCodeAnalyzer) }
 
             try {
                 camera = cameraProvider?.bindToLifecycle(
