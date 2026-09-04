@@ -2,7 +2,7 @@ package dev.steenbakker.fast_scanner
 
 import dev.steenbakker.fast_scanner.objects.MobileScannerStartParameters
 
-typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int?) -> Unit
+typealias FrameCallback = (pixels: ByteArray, width: Int, height: Int, stride: Int) -> Unit
 typealias AnalyzerErrorCallback = (message: String) -> Unit
 typealias AnalyzerSuccessCallback = (barcodes: List<Map<String, Any?>>?) -> Unit
 typealias MobileScannerErrorCallback = (error: String) -> Unit

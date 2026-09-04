@@ -14,17 +14,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     static var scanWindow: [CGFloat]?
     
     init(barcodeHandler: BarcodeHandler, registry: FlutterTextureRegistry) {
-        self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { barcodes, error, image in
-            if barcodes != nil {
-                let barcodesMap: [Any?] = barcodes!.compactMap { barcode in
-                    return barcode
-                }
-                if (!barcodesMap.isEmpty) {
-                    barcodeHandler.publishEvent(["name": "barcode", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!), "width": image.size.width, "height": image.size.height])
-                }
-            } else if (error != nil){
-                barcodeHandler.publishEvent(["name": "error", "data": error])
-            }
+        self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { gray, width, height, stride in
+            barcodeHandler.publishEvent([
+                "name": "frame",
+                "gray": FlutterStandardTypedData(bytes: gray),
+                "width": width,
+                "height": height,
+                "stride": stride,
+            ])
         }, torchModeChangeCallback: { torchState in
             barcodeHandler.publishEvent(["name": "torchState", "data": torchState])
         }, zoomScaleChangeCallback: { zoomScale in

@@ -42,21 +42,14 @@ class MobileScannerHandler(
 
     private var analyzerResult: MethodChannel.Result? = null
 
-    private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int? ->
-        if (image != null) {
-            barcodeHandler.publishEvent(mapOf(
-                "name" to "barcode",
-                "data" to barcodes,
-                "image" to image,
-                "width" to width!!.toDouble(),
-                "height" to height!!.toDouble()
-            ))
-        } else {
-            barcodeHandler.publishEvent(mapOf(
-                "name" to "barcode",
-                "data" to barcodes
-            ))
-        }
+    private val callback: FrameCallback = { pixels: ByteArray, width: Int, height: Int, stride: Int ->
+        barcodeHandler.publishEvent(mapOf(
+            "name" to "frame",
+            "gray" to pixels,
+            "width" to width,
+            "height" to height,
+            "stride" to stride
+        ))
     }
 
     private val errorCallback: MobileScannerErrorCallback = {error: String ->

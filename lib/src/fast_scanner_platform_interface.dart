@@ -33,6 +33,12 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('barcodesStream has not been implemented.');
   }
 
+  /// Whether each processed analysis frame found a QR code.
+  ///
+  /// `true` if at least one QR was decoded, `false` if detect finished with none.
+  /// Frames skipped because a backend was busy are not emitted.
+  Stream<bool> get scanAttemptsStream => const Stream<bool>.empty();
+
   /// Get the stream of torch state changes.
   Stream<TorchState> get torchStateStream {
     throw UnimplementedError('torchStateStream has not been implemented.');

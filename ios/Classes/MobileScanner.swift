@@ -8,13 +8,10 @@
 import Foundation
 import Flutter
 import AVFoundation
-import VideoToolbox
-import Vision
 
-typealias MobileScannerCallback = ((Array<String>?, String?, UIImage) -> ())
+typealias MobileScannerFrameCallback = ((Data, Int, Int, Int) -> ())
 typealias TorchModeChangeCallback = ((Int?) -> ())
 typealias ZoomScaleChangeCallback = ((Double?) -> ())
-typealias BarcodeScanningCallback = ([String]?, Error?) -> Void
 
 public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, FlutterTexture {
     /// Capture session of the camera
@@ -30,7 +27,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     var videoPosition: AVCaptureDevice.Position = AVCaptureDevice.Position.back
 
     /// When results are found, this callback will be called
-    let mobileScannerCallback: MobileScannerCallback
+    let mobileScannerCallback: MobileScannerFrameCallback
 
     /// When torch mode is changes, this callback will be called
     let torchModeChangeCallback: TorchModeChangeCallback
@@ -49,17 +46,18 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
-    private let backgroundQueue = DispatchQueue(label: "camera-handling")
+    private let cameraQueue = DispatchQueue(label: "dev.steenbakker.fast_scanner.camera")
+    private let convertQueue = DispatchQueue(label: "dev.steenbakker.fast_scanner.convert")
+    private let processingLock = NSLock()
+    private var isProcessing = false
 
     var standardZoomFactor: CGFloat = 1
 
     private var nextScanTime = 0.0
     
-    private var imagesCurrentlyBeingProcessed = false
-    
     public var timeoutSeconds: Double = 0
 
-    init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback, torchModeChangeCallback: @escaping TorchModeChangeCallback, zoomScaleChangeCallback: @escaping ZoomScaleChangeCallback) {
+    init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerFrameCallback, torchModeChangeCallback: @escaping TorchModeChangeCallback, zoomScaleChangeCallback: @escaping ZoomScaleChangeCallback) {
         self.registry = registry
         self.mobileScannerCallback = mobileScannerCallback
         self.torchModeChangeCallback = torchModeChangeCallback
@@ -125,73 +123,77 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to get image buffer from sample buffer.")
             return
         }
         latestBuffer = imageBuffer
         registry?.textureFrameAvailable(textureId)
-        
-        let currentTime = Date().timeIntervalSince1970
-        let eligibleForScan = currentTime > nextScanTime && !imagesCurrentlyBeingProcessed
-        
-        if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
 
-            nextScanTime = currentTime + timeoutSeconds
-            imagesCurrentlyBeingProcessed = true
-            
-            let ciImage = latestBuffer.image
+        processingLock.lock()
+        let skip = isProcessing
+        if !skip {
+            isProcessing = true
+        }
+        processingLock.unlock()
 
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                if(self!.latestBuffer == nil){
+        if skip {
+            return
+        }
+
+        CVPixelBufferRetain(imageBuffer)
+        convertQueue.async { [weak self] in
+            let gray = MobileScanner.copyGray(from: imageBuffer)
+            CVPixelBufferRelease(imageBuffer)
+            DispatchQueue.main.async {
+                defer {
+                    self?.processingLock.lock()
+                    self?.isProcessing = false
+                    self?.processingLock.unlock()
+                }
+                guard let self = self, let gray = gray else {
                     return
                 }
-                var cgImage: CGImage?
-                VTCreateCGImageFromCVPixelBuffer(self!.latestBuffer, options: nil, imageOut: &cgImage)
-                let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!)
-                do {
-                    let barcodeRequest:VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
-                        self?.imagesCurrentlyBeingProcessed = false
-                        if error == nil {
-                            if let results = request.results as? [VNBarcodeObservation] {
-                                for barcode in results {
-                                    DispatchQueue.main.async {
-                                        self?.mobileScannerCallback([barcode.payloadStringValue ?? ""], error?.localizedDescription, ciImage)
-                                    }
-                                    //                                   if barcodeType == "QR" {
-                                    //                                        let image = CIImage(image: source)
-                                    //                                        image?.cropping(to: barcode.boundingBox)
-                                    //                                        self.qrCodeDescriptor(qrCode: barcode, qrCodeImage: image!)
-                                    //                                    }
-                                }
-                            }
-                        } else {
-                            self?.mobileScannerCallback([], error?.localizedDescription, ciImage)
-                        }
-                    })
-                    try imageRequestHandler.perform([barcodeRequest])
-                } catch let e {
-                    self?.mobileScannerCallback([], e.localizedDescription, ciImage)
+                self.mobileScannerCallback(gray.data, gray.width, gray.height, gray.stride)
+            }
+        }
+    }
+
+    private struct GrayCopy {
+        let data: Data
+        let width: Int
+        let height: Int
+        let stride: Int
+    }
+
+    private static func copyGray(from buffer: CVPixelBuffer) -> GrayCopy? {
+        CVPixelBufferLockBaseAddress(buffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
+
+        let width = CVPixelBufferGetWidth(buffer)
+        let height = CVPixelBufferGetHeight(buffer)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
+        guard let base = CVPixelBufferGetBaseAddress(buffer), width > 0, height > 0 else {
+            return nil
+        }
+
+        var gray = Data(count: width * height)
+        gray.withUnsafeMutableBytes { dest in
+            guard let dst = dest.bindMemory(to: UInt8.self).baseAddress else {
+                return
+            }
+            let src = base.assumingMemoryBound(to: UInt8.self)
+            for y in 0..<height {
+                let row = src.advanced(by: y * bytesPerRow)
+                let dstRow = dst.advanced(by: y * width)
+                for x in 0..<width {
+                    let i = x * 4
+                    let b = Int(row[i])
+                    let g = Int(row[i + 1])
+                    let r = Int(row[i + 2])
+                    dstRow[x] = UInt8((77 * r + 150 * g + 29 * b) >> 8)
                 }
             }
-
-            // scanner.process(image) { [self] barcodes, error in
-            //     imagesCurrentlyBeingProcessed = false
-                
-            //     if (detectionSpeed == DetectionSpeed.noDuplicates) {
-            //         let newScannedBarcodes = barcodes?.compactMap({ barcode in
-            //             return barcode.rawValue
-            //         }).sorted()
-                    
-            //         if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
-            //             return
-            //         } else if (newScannedBarcodes?.isEmpty == false) {
-            //             barcodesString = newScannedBarcodes
-            //         }
-            //     }
-
-            //     mobileScannerCallback(barcodes, error, ciImage)
-            // }
         }
+        return GrayCopy(data: gray, width: width, height: height, stride: width)
     }
 
     /// Start scanning for barcodes
@@ -258,7 +260,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
         videoPosition = cameraPosition
         // calls captureOutput()
-        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
+        videoOutput.setSampleBufferDelegate(self, queue: cameraQueue)
 
         captureSession!.addOutput(videoOutput)
         for connection in videoOutput.connections {
@@ -269,7 +271,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         captureSession!.commitConfiguration()
 
-        backgroundQueue.async {
+        cameraQueue.async {
             guard let captureSession = self.captureSession else {
                 return
             }

@@ -20,6 +20,10 @@ public class BarcodeHandler: NSObject, FlutterStreamHandler {
     }
     
     func publishEvent(_ event: [String: Any?]) {
+        if Thread.isMainThread {
+            eventSink?(event)
+            return
+        }
         DispatchQueue.main.async {
             self.eventSink?(event)
         }

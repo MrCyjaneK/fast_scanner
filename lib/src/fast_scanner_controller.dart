@@ -72,7 +72,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   /// The formats that the scanner should detect.
   ///
-  /// If this is empty, all supported formats are detected.
+  /// If this is empty, QR codes are detected.
   final List<BarcodeFormat> formats;
 
   /// Whether scanned barcodes should contain the image
@@ -81,6 +81,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// If this is false, [BarcodeCapture.image] will always be null.
   ///
   /// Defaults to false, and is only supported on iOS and Android.
+  /// The bytes are the grayscale analysis frame, not a JPEG.
   final bool returnImage;
 
   /// Whether the flashlight should be turned on when the camera is started.
@@ -104,18 +105,27 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Get the stream of scanned barcodes.
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
+  /// Whether each processed analysis frame found a QR code.
+  Stream<bool> get scanAttempts => _scanAttemptsController.stream;
+
   StreamSubscription<BarcodeCapture?>? _barcodesSubscription;
+  StreamSubscription<bool>? _scanAttemptsSubscription;
   StreamSubscription<TorchState>? _torchStateSubscription;
   StreamSubscription<double>? _zoomScaleSubscription;
 
   bool _isDisposed = false;
 
+  final StreamController<bool> _scanAttemptsController =
+      StreamController<bool>.broadcast();
+
   void _disposeListeners() {
     _barcodesSubscription?.cancel();
+    _scanAttemptsSubscription?.cancel();
     _torchStateSubscription?.cancel();
     _zoomScaleSubscription?.cancel();
 
     _barcodesSubscription = null;
+    _scanAttemptsSubscription = null;
     _torchStateSubscription = null;
     _zoomScaleSubscription = null;
   }
@@ -128,6 +138,15 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       }
 
       _barcodesController.add(barcode);
+    });
+
+    _scanAttemptsSubscription =
+        MobileScannerPlatform.instance.scanAttemptsStream.listen((bool hit) {
+      if (_scanAttemptsController.isClosed) {
+        return;
+      }
+
+      _scanAttemptsController.add(hit);
     });
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
@@ -174,7 +193,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// The [path] points to a file on the device.
   ///
-  /// This is only supported on Android and iOS.
+  /// This is supported on Android, iOS and macOS.
   ///
   /// Returns the [BarcodeCapture] that was found in the image.
   Future<BarcodeCapture?> analyzeImage(String path) {
@@ -416,6 +435,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     _isDisposed = true;
     unawaited(_barcodesController.close());
+    unawaited(_scanAttemptsController.close());
     super.dispose();
 
     await MobileScannerPlatform.instance.dispose();
