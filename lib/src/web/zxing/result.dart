@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:fast_scanner/src/enums/barcode_format.dart';
-import 'package:fast_scanner/src/enums/barcode_type.dart';
 import 'package:fast_scanner/src/objects/barcode.dart';
 import 'package:fast_scanner/src/web/zxing/result_point.dart';
 
@@ -28,32 +27,10 @@ extension type Result(JSObject _) implements JSObject {
   external int? get timestamp;
 
   /// Get the barcode format of the result.
-  ///
-  /// See also https://github.com/zxing-js/library/blob/master/src/core/BarcodeFormat.ts
   BarcodeFormat get barcodeFormat {
     return switch (_barcodeFormat) {
-      0 => BarcodeFormat.aztec,
-      1 => BarcodeFormat.codabar,
-      2 => BarcodeFormat.code39,
-      3 => BarcodeFormat.code93,
-      4 => BarcodeFormat.code128,
-      5 => BarcodeFormat.dataMatrix,
-      6 => BarcodeFormat.ean8,
-      7 => BarcodeFormat.ean13,
-      8 => BarcodeFormat.itf,
-      // Maxicode
-      9 => BarcodeFormat.unknown,
-      10 => BarcodeFormat.pdf417,
       11 => BarcodeFormat.qrCode,
-      // RSS 14
-      12 => BarcodeFormat.unknown,
-      // RSS EXPANDED
-      13 => BarcodeFormat.unknown,
-      14 => BarcodeFormat.upcA,
-      15 => BarcodeFormat.upcE,
-      // UPC/EAN extension
-      16 => BarcodeFormat.unknown,
-      _ => BarcodeFormat.unknown
+      _ => BarcodeFormat.unknown,
     };
   }
 
@@ -76,12 +53,9 @@ extension type Result(JSObject _) implements JSObject {
   /// Convert this result to a [Barcode].
   Barcode get toBarcode {
     return Barcode(
-      corners: resultPoints,
       format: barcodeFormat,
       displayValue: text,
-      rawBytes: rawBytes,
       rawValue: text,
-      type: BarcodeType.text,
     );
   }
 }

@@ -2,10 +2,10 @@ package dev.steenbakker.fast_scanner
 
 import android.app.Activity
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.hardware.display.DisplayManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Size
 import android.view.Surface
 import android.view.WindowManager
@@ -21,7 +21,6 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import dev.steenbakker.fast_scanner.objects.MobileScannerStartParameters
-import io.flutter.Log
 import io.flutter.view.TextureRegistry
 import java.util.concurrent.Executors
 
@@ -29,7 +28,7 @@ import java.util.concurrent.Executors
 class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
-    private val mobileScannerCallback: MobileScannerCallback,
+    private val frameCallback: FrameCallback,
     private val mobileScannerErrorCallback: MobileScannerErrorCallback
 ) {
 
@@ -38,9 +37,6 @@ class MobileScanner(
     private var camera: Camera? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
-//    private var scanner = BarcodeScanning.getClient()
-    private var lastScanned: List<String?>? = null
-    private var scannerTimeout = false
     private var displayListener: DisplayManager.DisplayListener? = null
     private var cameraPosition: CameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
@@ -49,31 +45,9 @@ class MobileScanner(
     private var detectionTimeout: Long = 250
     private var returnImage = false
     private val cameraExecutor = Executors.newSingleThreadExecutor()
-
-    private val universalQrCodeAnalyzer = UniversalQrCodeAnalyzer { qrResult ->
-        Log.d("qrAnalyzerBoofcv:", "called")
-        val barcodeMap: MutableList<Map<String, Any?>> = mutableListOf()
-
-//        barcodeMap.add(mapOf(qrResult.text to qrResult.text))
-        barcodeMap.add(
-            mapOf(
-                "rawBytes" to qrResult.rawBytes,
-                "rawValue" to qrResult.text,
-                "displayValue" to qrResult.text
-            )
-        )
-        mobileScannerCallback(
-            barcodeMap,
-        null,
-        null,
-        null
-        )
-    }
-
-    private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
-        val matrix = Matrix()
-        matrix.postRotate(degrees)
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val grayscaleFrameAnalyzer = GrayscaleFrameAnalyzer(mainHandler) { pixels, width, height, stride ->
+        frameCallback(pixels, width, height, stride)
     }
 
 
@@ -130,8 +104,6 @@ class MobileScanner(
 
             return
         }
-
-        lastScanned = null
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
         val executor = ContextCompat.getMainExecutor(activity)
@@ -217,7 +189,7 @@ class MobileScanner(
                 }
             }
 
-            val analysis = analysisBuilder.build().apply { setAnalyzer(cameraExecutor, universalQrCodeAnalyzer) }
+            val analysis = analysisBuilder.build().apply { setAnalyzer(cameraExecutor, grayscaleFrameAnalyzer) }
 
             try {
                 camera = cameraProvider?.bindToLifecycle(

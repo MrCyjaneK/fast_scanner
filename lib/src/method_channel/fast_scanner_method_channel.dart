@@ -1,15 +1,14 @@
 import 'dart:async';
 
-import 'package:fast_scanner/src/enums/barcode_format.dart';
 import 'package:fast_scanner/src/enums/fast_scanner_authorization_state.dart';
 import 'package:fast_scanner/src/enums/fast_scanner_error_code.dart';
 import 'package:fast_scanner/src/enums/torch_state.dart';
 import 'package:fast_scanner/src/fast_scanner_exception.dart';
 import 'package:fast_scanner/src/fast_scanner_platform_interface.dart';
 import 'package:fast_scanner/src/fast_scanner_view_attributes.dart';
-import 'package:fast_scanner/src/objects/barcode.dart';
 import 'package:fast_scanner/src/objects/barcode_capture.dart';
 import 'package:fast_scanner/src/objects/start_options.dart';
+import 'package:fast_scanner/src/scanqrc/scanqrc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -22,7 +21,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     'dev.steenbakker.fast_scanner/scanner/method',
   );
 
-  /// The event channel that sends back scanned barcode events.
+  /// The event channel that sends camera frames and device state.
   @visibleForTesting
   final eventChannel = const EventChannel(
     'dev.steenbakker.fast_scanner/scanner/event',
@@ -38,68 +37,14 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   int? _textureId;
+  bool _returnImage = false;
+  StreamSubscription<Map<Object?, Object?>>? _frameSubscription;
 
-  /// Parse a [BarcodeCapture] from the given [event].
-  BarcodeCapture? _parseBarcode(Map<Object?, Object?>? event) {
-    if (event == null) {
-      return null;
-    }
-
-    final Object? data = event['data'];
-
-    if (data == null || data is! List<Object?>) {
-      return null;
-    }
-
-    if (defaultTargetPlatform == TargetPlatform.macOS) {
-      final List<Map<Object?, Object?>> barcodes =
-          data.cast<Map<Object?, Object?>>();
-      return BarcodeCapture(
-        raw: event,
-        barcodes: barcodes
-            .map(
-              (barcode) => Barcode(
-                rawValue: barcode['payload'] as String?,
-                format: BarcodeFormat.fromRawValue(
-                  barcode['symbology'] as int? ?? -1,
-                ),
-              ),
-            )
-            .toList(),
-      );
-    }
-
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      final List<Map<Object?, Object?>> barcodes =
-          data.cast<Map<Object?, Object?>>();
-      final double? width = event['width'] as double?;
-      final double? height = event['height'] as double?;
-
-      return BarcodeCapture(
-        raw: data,
-        barcodes: barcodes.map(Barcode.fromNative).toList(),
-        image: event['image'] as Uint8List?,
-        size: width == null || height == null ? Size.zero : Size(width, height),
-      );
-    }
-
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      final double? width = event['width'] as double?;
-      final double? height = event['height'] as double?;
-      return BarcodeCapture(
-        raw: data,
-        barcodes: data.map((e) => Barcode(rawValue: e.toString())).toList(),
-        image: event['image'] as Uint8List?,
-        size: width == null || height == null ? Size.zero : Size(width, height),
-      );
-    }
-    throw const MobileScannerException(
-      errorCode: MobileScannerErrorCode.genericError,
-      errorDetails: MobileScannerErrorDetails(
-        message: 'Only Android, iOS and macOS are supported.',
-      ),
-    );
-  }
+  final ScanqrcEngine _scanqrc = ScanqrcEngine();
+  final StreamController<BarcodeCapture?> _barcodesController =
+      StreamController<BarcodeCapture?>.broadcast();
+  final StreamController<bool> _scanAttemptsController =
+      StreamController<bool>.broadcast();
 
   /// Request permission to access the camera.
   ///
@@ -141,12 +86,56 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
   }
 
-  @override
-  Stream<BarcodeCapture?> get barcodesStream {
-    return eventsStream
-        .where((event) => event['name'] == 'barcode')
-        .map((event) => _parseBarcode(event));
+  void _ensureFrameListener() {
+    _frameSubscription ??= eventsStream.listen(_onEvent);
   }
+
+  void _onEvent(Map<Object?, Object?> event) {
+    if (event['name'] != 'frame') {
+      return;
+    }
+
+    final Object? gray = event['gray'];
+    if (gray is! Uint8List) {
+      return;
+    }
+
+    final int? width = (event['width'] as num?)?.toInt();
+    final int? height = (event['height'] as num?)?.toInt();
+    final int? stride = (event['stride'] as num?)?.toInt();
+    if (width == null || height == null || stride == null) {
+      return;
+    }
+    if (width <= 0 || height <= 0 || stride < width) {
+      return;
+    }
+
+    _scanqrc.submit(
+      GrayFrame(
+        pixels: gray,
+        width: width,
+        height: height,
+        stride: stride,
+      ),
+      image: _returnImage ? gray : null,
+      onHit: (BarcodeCapture capture) {
+        if (!_barcodesController.isClosed) {
+          _barcodesController.add(capture);
+        }
+      },
+      onAttempt: ({required bool detected}) {
+        if (!_scanAttemptsController.isClosed) {
+          _scanAttemptsController.add(detected);
+        }
+      },
+    );
+  }
+
+  @override
+  Stream<BarcodeCapture?> get barcodesStream => _barcodesController.stream;
+
+  @override
+  Stream<bool> get scanAttemptsStream => _scanAttemptsController.stream;
 
   @override
   Stream<TorchState> get torchStateStream {
@@ -163,14 +152,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<BarcodeCapture?> analyzeImage(String path) async {
-    final Map<String, Object?>? result =
-        await methodChannel.invokeMapMethod<String, Object?>(
-      'analyzeImage',
-      path,
-    );
-
-    return _parseBarcode(result);
+  Future<BarcodeCapture?> analyzeImage(String path) {
+    return _scanqrc.analyzeImage(path);
   }
 
   @override
@@ -205,6 +188,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
 
     await _requestCameraPermission();
+    _returnImage = startOptions.returnImage;
+    await _scanqrc.start();
+    _ensureFrameListener();
 
     Map<String, Object?>? startResult;
 
@@ -307,6 +293,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<void> dispose() async {
+    await _frameSubscription?.cancel();
+    _frameSubscription = null;
+    await _scanqrc.shutdown();
     await stop();
   }
 }
