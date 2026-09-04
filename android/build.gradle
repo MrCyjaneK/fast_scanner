@@ -2,7 +2,7 @@ group 'dev.steenbakker.fast_scanner'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '2.0.20'
+    ext.kotlin_version = '2.4.10'
     repositories {
         google()
         mavenCentral()
@@ -64,7 +64,7 @@ android {
 }
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.0.20"))
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:2.4.10"))
 
     implementation 'androidx.camera:camera-lifecycle:1.4.1'
     implementation 'androidx.camera:camera-camera2:1.4.1'
