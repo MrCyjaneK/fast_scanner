@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.hardware.display.DisplayManager
 import android.os.Build
+import android.os.Process
 import android.util.Size
 import android.view.Surface
 import android.view.WindowManager
@@ -24,6 +25,7 @@ import dev.steenbakker.fast_scanner.objects.MobileScannerStartParameters
 import io.flutter.Log
 import io.flutter.view.TextureRegistry
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 
 class MobileScanner(
@@ -50,7 +52,18 @@ class MobileScanner(
     private var returnImage = false
     private val cameraExecutor = Executors.newSingleThreadExecutor()
 
-    private val universalQrCodeAnalyzer = UniversalQrCodeAnalyzer { qrResult ->
+    private val universalQrCodeAnalyzer: Future<UniversalQrCodeAnalyzer> =
+        Executors.newSingleThreadExecutor { runnable ->
+            Thread({
+                Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
+                runnable.run()
+            }, "fast_scanner-analyzer-init")
+        }.let { executor ->
+            executor.submit<UniversalQrCodeAnalyzer> { createUniversalQrCodeAnalyzer() }
+                .also { executor.shutdown() }
+        }
+
+    private fun createUniversalQrCodeAnalyzer() = UniversalQrCodeAnalyzer { qrResult ->
         Log.d("qrAnalyzerBoofcv:", "called")
         val barcodeMap: MutableList<Map<String, Any?>> = mutableListOf()
 
@@ -217,7 +230,7 @@ class MobileScanner(
                 }
             }
 
-            val analysis = analysisBuilder.build().apply { setAnalyzer(cameraExecutor, universalQrCodeAnalyzer) }
+            val analysis = analysisBuilder.build().apply { setAnalyzer(cameraExecutor) { image -> universalQrCodeAnalyzer.get().analyze(image) } }
 
             try {
                 camera = cameraProvider?.bindToLifecycle(
